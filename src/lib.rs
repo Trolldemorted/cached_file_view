@@ -46,6 +46,11 @@ impl FileView {
         }
     }
 
+    pub fn len(&self) -> u64 {
+        let inner = &mut *self.inner.lock().unwrap();
+        inner.file.metadata().unwrap().len()
+    }
+
     pub fn read(&self, range: Range<u64>) -> Result<FileViewItem, FileViewError> {
         let inner = &mut *self.inner.lock().unwrap();
 
