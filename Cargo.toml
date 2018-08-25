@@ -1,0 +1,10 @@
+[package]
+name = "cached_file_view"
+version = "0.1.0"
+authors = ["Benedikt Constantin Radtke <benediktradtke@mailbox.tu-berlin.de>"]
+description = "A simple library for mapping arbitrary parts of huge files into memory"
+keywords = ["file", "mapped", "view"]
+repository = "https://github.com/Trolldemorted/cached_file_view"
+license = "LGPL-3.0+"
+
+[dependencies]
