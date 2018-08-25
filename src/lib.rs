@@ -90,10 +90,12 @@ impl FileView {
 
 impl FileViewInner {
     fn get(&mut self, range: &Range<u64>) -> Option<Arc<FileViewBuffer>> {
+        let len = self.buffers.len();
         let hit_buffer = self.get_buffer(range);
         if let Some((i, buffer)) = hit_buffer {
-            self.buffers.rotate_right(1);
-            self.buffers.swap(i, 0);
+            if i < len - 1 { // move hot buffer to the right
+                self.buffers.swap(i, i + 1);
+            }
             Some(buffer)
         } else {
             None
