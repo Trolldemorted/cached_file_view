@@ -13,7 +13,8 @@ const MINIMUM_BUFFER_SIZE: usize = 0x8000;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FileViewError {
-    IOError
+    IOError,
+    EndOfFileError
 }
 
 pub struct FileView {
@@ -46,9 +47,9 @@ impl FileView {
         }
     }
 
-    pub fn len(&self) -> u64 {
+    pub fn len(&self) -> Result<u64, FileViewError> {
         let inner = &mut *self.inner.lock().unwrap();
-        inner.file.metadata().unwrap().len()
+        Ok(inner.file.metadata()?.len())
     }
 
     pub fn read(&self, range: Range<u64>) -> Result<FileViewItem, FileViewError> {
@@ -58,12 +59,11 @@ impl FileView {
             buffer
         } else {
             // load a new chunk from disk
-            inner.file.seek(SeekFrom::Start(range.start)).unwrap();
+            inner.file.seek(SeekFrom::Start(range.start))?;
             let mut new_buffer = vec!(0;cmp::max(MINIMUM_BUFFER_SIZE, (range.end - range.start) as usize));
             inner.file.read(&mut new_buffer)?;
 
             // add it to our buffers
-            // println!("replacing cache ({}: {})", range.start, new_buffer.len());
             let file_view_buffer = Arc::new(FileViewBuffer {
                 file_offset: range.start,
                 data: new_buffer
@@ -75,6 +75,10 @@ impl FileView {
             }
             file_view_buffer
         };
+
+        if range.end - buffer.file_offset > buffer.data.len() as u64 || range.end > inner.file.metadata()?.len() {
+            return Err(FileViewError::EndOfFileError)
+        }
 
         Ok(FileViewItem {
             buffer_offset: range.start - buffer.file_offset,
