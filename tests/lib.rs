@@ -5,7 +5,7 @@ use std::path::Path;
 use cached_file_view::FileView;
 use cached_file_view::FileViewError;
 
-/*
+
 #[test]
 fn basic() {
     let f = File::open(Path::new("tests/test.txt")).expect("file not found");
@@ -57,7 +57,7 @@ fn test_oob_end2() {
         panic!("oob read did not fail")
     }
 }
-*/
+
 #[test]
 fn test_huge() {
     let f = File::open(Path::new("../twa_unpack/twa_rigidmodels.pack")).expect("file not found");
