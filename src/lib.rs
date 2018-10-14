@@ -6,7 +6,6 @@ use std::io::Read;
 use std::io::Seek;
 use std::io::SeekFrom;
 use std::ops::Range;
-use std::ops::Deref;
 use std::io;
 use std::collections::HashMap;
 use std::fmt;
@@ -192,6 +191,25 @@ impl FileView {
                 buffers: buffers
             })
         })
+    }
+
+    pub fn read_raw<R: Borrow<Range<u64>>>(&self, range: R) -> Result<Vec<u8>, FileViewError> {
+        let inner = &mut *self.inner.lock().unwrap();
+        let range = range.borrow();
+        if DEBUG {
+            println!("read_raw({:x}-{:x}) (self.length={:x})", range.start, range.end, self.length)
+        }
+        if range.end > self.length {
+            return Err(FileViewError::OutOfBoundsError);
+        }
+        let u64_len = range.end - range.start;
+        if u64_len > std::usize::MAX as u64 {
+            return Err(FileViewError::RangeTooBigError)
+        }
+        let len = u64_len as usize;
+        let mut buffer = Vec::with_capacity(len);
+        inner.file.read(&mut buffer)?;
+        Ok(buffer)
     }
 }
 
