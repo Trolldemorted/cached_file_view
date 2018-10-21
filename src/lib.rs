@@ -207,8 +207,9 @@ impl FileView {
             return Err(FileViewError::RangeTooBigError)
         }
         let len = u64_len as usize;
-        let mut buffer = Vec::with_capacity(len);
-        inner.file.read(&mut buffer)?;
+        let mut buffer = vec!(0; len);
+        inner.file.seek(SeekFrom::Start(range.start))?;
+        inner.file.read_exact(&mut buffer)?;
         Ok(buffer)
     }
 }
